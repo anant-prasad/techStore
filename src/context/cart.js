@@ -64,7 +64,7 @@ function CartProvider({ children }){
             return;
         }
         else{
-            const newItem = {id,image:image.url,title,price,amount:1};
+            const newItem = {id,image,title,price,amount:1};
             const newCart = [...cart,newItem];
             setCart(newCart);
 
