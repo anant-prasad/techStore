@@ -4,9 +4,11 @@ import {CartContext} from "../context/cart";
 import {useHistory} from "react-router-dom";
 import EmptyCart from "../components/Cart/EmptyCart";
 //react-stripe-element
+import {CardElement, StripeProvider,Elements,injectStripe} from 'react-stripe-elements';
+
 import submitOrder from "../strapi/submitOrder"
 
-export default function Checkout(props) {
+function Checkout(props) {
   const {cart,total,clearCart} = React.useContext(CartContext);
   const {user,showAlert,hideAlert,alert} = React.useContext(UserContext);
   const history = useHistory();
@@ -16,7 +18,20 @@ export default function Checkout(props) {
   const isEmpty = !name || alert.show;
 
   async function handleSubmit(e){
-    e.preventDedault();
+    showAlert({msg:"submitting order ...please wait" })
+    e.preventDefault();
+    const response = await props.stripe.createToken().catch(error => console.log(error));
+
+    const {token} = response;
+    if(token){
+      console.log(response)
+
+
+    }
+    else{
+      hideAlert()
+      setError(response.error.message);
+    }
 
   }
   if(cart.length < 1){
@@ -45,6 +60,7 @@ export default function Checkout(props) {
         </p>
 
       </div>
+      <CardElement className="card-element"></CardElement>
         {error && <p className="form-empty">{error}</p>}
         {isEmpty ? <p className="form-empty">please fill out name field</p> : <button type="submit" onClick={handleSubmit} className="btn btn-primary btn-block">submit</button>}
         
@@ -53,3 +69,15 @@ export default function Checkout(props) {
     </form>
   </section>;
 }
+
+const CardForm = injectStripe(Checkout);
+
+const StripeWrapper = () =>{
+  return <StripeProvider apiKey="pk_test_51GwvoxERCHRKALZsP9YKKRtPdWk804uubrAVkbYKYHtgxTMKcuzLrxK3fHRsl1IBNOOwHSUz1Tha8g90WCsXzRi700JCM24Hbx">
+    <Elements>
+      <CardForm></CardForm>
+    </Elements>
+  </StripeProvider>
+}
+
+export default StripeWrapper;
